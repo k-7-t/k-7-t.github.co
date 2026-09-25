@@ -14,6 +14,27 @@
     <span class="drawer">合集</span>
     <h1>错题本</h1>
     <p>快把错题放进来.</p>
+    <div class="sync-row">
+      <span id="syncStatus" class="sync-status">Not connected</span>
+      <button class="ghost small" id="settingsToggle">GitHub sync</button>
+    </div>
+  </div>
+
+  <div class="glass settings" id="settingsPanel" hidden>
+    <p class="slip-label">Connect a GitHub repo</p>
+    <p class="hint">Needs a token with repo contents access. Stored only in this browser's localStorage and sent directly to GitHub — never share this page's source with anyone you don't trust with that token.</p>
+    <div class="row">
+      <input id="ghOwner" placeholder="Repo owner (username)">
+      <input id="ghRepo" placeholder="Repo name">
+    </div>
+    <div class="row">
+      <input id="ghPath" placeholder="File path (mistakes.md)">
+      <input id="ghBranch" placeholder="Branch (main)">
+    </div>
+    <input id="ghToken" type="password" placeholder="Personal access token" style="margin-bottom:12px">
+    <div class="actions">
+      <button class="primary" id="ghConnect">Save & sync</button>
+    </div>
   </div>
 
   <div class="slip glass">
