@@ -8,7 +8,7 @@ const defaultSubjectInput = document.querySelector('#defaultSubject');
 const agentOutputEl = document.querySelector('#agentOutput');
 const fields = ['subject', 'title', 'question', 'answer'];
 const translations = {
-  zh: {
+  zh_cn: {
     collection: '合集',
     title: '错题本',
     tagline: '快把错题放进来.',
@@ -36,7 +36,7 @@ const translations = {
     githubSave: '学习计划已保存到 GitHub',
     noToken: '未配置 GitHub Token，无法保存 studyplan.md'
   },
-  en: {
+  en_us: {
     collection: 'Collection',
     title: 'Mistake Book',
     tagline: 'Collect every mistake and learn from it.',
@@ -65,12 +65,13 @@ const translations = {
     noToken: 'GitHub token is missing, so studyplan.md cannot be saved.'
   }
 };
-let currentLanguage = localStorage.getItem('preferredLanguage') || 'zh';
+let currentLanguage = localStorage.getItem('preferredLanguage') || 'zh_cn';
+if (!['zh_cn', 'en_us'].includes(currentLanguage)) currentLanguage = currentLanguage === 'en' ? 'en_us' : 'zh_cn';
 
 function setLanguage(lang) {
-  currentLanguage = lang === 'en' ? 'en' : 'zh';
+  currentLanguage = lang === 'en_us' ? 'en_us' : 'zh_cn';
   localStorage.setItem('preferredLanguage', currentLanguage);
-  document.documentElement.lang = currentLanguage === 'en' ? 'en' : 'zh-CN';
+  document.documentElement.lang = currentLanguage;
 
   document.querySelectorAll('[data-i18n]').forEach(element => {
     const key = element.dataset.i18n;
@@ -79,20 +80,35 @@ function setLanguage(lang) {
   });
 
   document.querySelectorAll('[data-placeholder-en],[data-placeholder-zh]').forEach(element => {
-    const placeholder = currentLanguage === 'en' ? element.dataset.placeholderEn : element.dataset.placeholderZh;
+    const placeholder = currentLanguage === 'en_us' ? element.dataset.placeholderEn : element.dataset.placeholderZh;
     if (placeholder) element.placeholder = placeholder;
   });
 
-  document.querySelectorAll('#langZh, #langEn').forEach(button => {
-    button.classList.toggle('active', button.id === (currentLanguage === 'en' ? 'langEn' : 'langZh'));
+  document.querySelectorAll('#zh_cn, #en_us').forEach(button => {
+    button.classList.toggle('active', button.id === currentLanguage);
   });
 
   render();
-  document.title = currentLanguage === 'en' ? 'Mistake Book' : '老弟の神秘错题本';
+  document.title = currentLanguage === 'en_us' ? 'Mistake Book' : '老弟の神秘错题本';
 }
 
 function getText(key) {
-  return translations[currentLanguage][key] || translations.zh[key] || key;
+  return translations[currentLanguage][key] || translations.zh_cn[key] || key;
+}
+
+let currentTheme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+
+function setTheme(theme) {
+  currentTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = currentTheme;
+  localStorage.setItem('theme', currentTheme);
+  loadThemeColors();
+  const themeToggle = document.querySelector('#themeToggle');
+  if (!themeToggle) return;
+  const nextThemeLabel = currentTheme === 'dark' ? '切换为浅色主题' : '切换为深色主题';
+  themeToggle.textContent = currentTheme === 'dark' ? '☀' : '☾';
+  themeToggle.setAttribute('aria-label', nextThemeLabel);
+  themeToggle.title = nextThemeLabel;
 }
 
 // 默认只填写你的仓库身份，Token 必须由每位用户自行配置。
@@ -392,6 +408,24 @@ async function loadStorageConfig() {
   };
 }
 
+async function loadThemeColors() {
+  try {
+    const response = await fetch('./theme-colors.json', { cache: 'no-store' });
+    if (!response.ok) return;
+    const json = await response.json();
+    const variables = document.documentElement.dataset.theme === 'dark' && json.themes?.dark?.cssVariables
+      ? json.themes.dark.cssVariables
+      : json.cssVariables || {};
+    for (const [name, value] of Object.entries(variables)) {
+      if (/^--[a-z0-9-]+$/i.test(name) && typeof value === 'string') {
+        document.documentElement.style.setProperty(name, value);
+      }
+    }
+  } catch (error) {
+    // 主题配置不可用时使用 style.css 中的默认颜色。
+  }
+}
+
 async function pullConfiguredWrongAnswers() {
   if (storageConfig.wrongAnswers.defaultOption === 'local') {
     try { entries = JSON.parse(localStorage.getItem('wrongAnswersCatalog') || '[]'); } catch (error) { entries = []; }
@@ -432,7 +466,7 @@ function renderTabs(currentEntries) {
   // 只根据当前视图生成“全部”和该视图拥有的科目按钮。
   const rawSubjects = ['全部', ...new Set(currentEntries.map(entry => entry.subject).filter(Boolean))];
   tabsEl.innerHTML = rawSubjects.map(subject => {
-    const label = currentLanguage === 'en' ? (subject === '全部' ? 'All' : subject) : subject;
+    const label = currentLanguage === 'en_us' ? (subject === '全部' ? 'All' : subject) : subject;
     return `<button class="tab ${subject === filter ? 'active' : ''}" data-s="${escapeHtml(subject)}">${escapeHtml(label)}</button>`;
   }).join('');
   tabsEl.querySelectorAll('.tab').forEach(button => {
@@ -446,9 +480,9 @@ function renderTabs(currentEntries) {
 function renderViewTabs() {
   const rawViews = ['主界面', '已解决', '已关闭'];
   const labels = {
-    主界面: currentLanguage === 'en' ? 'Main' : '主界面',
-    已解决: currentLanguage === 'en' ? 'Solved' : '已解决',
-    已关闭: currentLanguage === 'en' ? 'Closed' : '已关闭'
+    主界面: currentLanguage === 'en_us' ? 'Main' : '主界面',
+    已解决: currentLanguage === 'en_us' ? 'Solved' : '已解决',
+    已关闭: currentLanguage === 'en_us' ? 'Closed' : '已关闭'
   };
   viewTabsEl.innerHTML = rawViews.map(item =>
     `<button class="tab ${item === view ? 'active' : ''}" data-view="${item}">${labels[item]}</button>`
@@ -474,7 +508,7 @@ function render() {
   const currentEntries = entriesForView();
   renderTabs(currentEntries);
   const shown = filter === '全部' ? currentEntries : currentEntries.filter(entry => entry.subject === filter);
-  countEl.textContent = shown.length ? (currentLanguage === 'en' ? `Total ${shown.length} mistakes` : `共 ${shown.length} 条错题`) : '';
+  countEl.textContent = shown.length ? (currentLanguage === 'en_us' ? `Total ${shown.length} mistakes` : `共 ${shown.length} 条错题`) : '';
   list.innerHTML = shown.length ? shown.map(entry => {
     const index = entries.indexOf(entry);
     const color = entry.subject ? tabColor(entry.subject) : 'var(--gold)';
@@ -486,12 +520,12 @@ function render() {
         <div class="issue-receipt ${entry.issueNumber ? 'exists' : 'pending'}">
           ${entry.issueNumber
             ? `<a href="${escapeHtml(entry.issueUrl)}" target="_blank" rel="noopener">GitHub #${escapeHtml(entry.issueNumber)}</a>`
-            : (currentLanguage === 'en' ? 'Not synced yet' : '尚未同步')}
+            : (currentLanguage === 'en_us' ? 'Not synced yet' : '尚未同步')}
         </div>
         <p class="q">${escapeHtml(entry.question)}</p>
-        <div class="answer"><strong>${currentLanguage === 'en' ? 'Correction: ' : '订正： '}</strong>${escapeHtml(entry.answer || (currentLanguage === 'en' ? 'Remember to fill this in next time.' : '下次记得补充错因。'))}</div>
+        <div class="answer"><strong>${currentLanguage === 'en_us' ? 'Correction: ' : '订正： '}</strong>${escapeHtml(entry.answer || (currentLanguage === 'en_us' ? 'Remember to fill this in next time.' : '下次记得补充错因。'))}</div>
         ${entry.issueState !== 'closed'
-          ? `<button class="learned ${entry.learnt ? 'active' : ''}" onclick="toggleLearnt(${index})">${entry.learnt ? (currentLanguage === 'en' ? 'Mark as not learned' : '标记为未学会') : (currentLanguage === 'en' ? 'I have learned it' : '我已学会')}</button>`
+          ? `<button class="learned ${entry.learnt ? 'active' : ''}" onclick="toggleLearnt(${index})">${entry.learnt ? (currentLanguage === 'en_us' ? 'Mark as not learned' : '标记为未学会') : (currentLanguage === 'en_us' ? 'I have learned it' : '我已学会')}</button>`
           : ''}
       </article>`;
   }).join('') : `<p class="empty glass">${getText('emptyState')}</p>`;
@@ -664,8 +698,9 @@ async function generateStudyPlan() {
 document.querySelector('#export').onclick = exportTxt;
 document.querySelector('#print').onclick = () => window.print();
 document.querySelector('#generatePlan').onclick = generateStudyPlan;
-document.getElementById('langZh').onclick = () => setLanguage('zh');
-document.getElementById('langEn').onclick = () => setLanguage('en');
+document.getElementById('zh_cn').onclick = () => setLanguage('zh_cn');
+document.getElementById('en_us').onclick = () => setLanguage('en_us');
+document.getElementById('themeToggle').onclick = () => setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 document.querySelector('#saveSubject').onclick = () => {
   defaultSubject = defaultSubjectInput.value.trim() || 'coding';
   defaultSubjectInput.value = defaultSubject;
@@ -694,7 +729,9 @@ document.querySelector('#saveGithubSettings').onclick = () => {
 };
 
 setLanguage(currentLanguage);
+setTheme(currentTheme);
 render();
+loadThemeColors();
 (async () => {
   try {
     storageConfig = await loadStorageConfig();
