@@ -5,7 +5,95 @@ const statusEl = document.querySelector('#syncStatus');
 const viewTabsEl = document.querySelector('#viewTabs');
 const subjectInput = document.querySelector('#subject');
 const defaultSubjectInput = document.querySelector('#defaultSubject');
+const agentOutputEl = document.querySelector('#agentOutput');
 const fields = ['subject', 'title', 'question', 'answer'];
+const translations = {
+  zh: {
+    collection: '合集',
+    title: '错题本',
+    tagline: '快把错题放进来.',
+    notConnected: '未连接',
+    refreshIssues: '刷新错题',
+    githubSettings: 'GitHub 设置',
+    defaultSubject: '默认科目',
+    save: '保存',
+    saveAndSync: '保存并同步',
+    newEntry: '新题',
+    record: '记录',
+    exportTxt: '导出 TXT',
+    printSave: '打印/保存',
+    studyAgent: '学习代理',
+    studyAgentHint: '根据当前错题库生成复习优先级与行动建议。',
+    generatePlan: '生成计划',
+    mainView: '主界面',
+    solvedView: '已解决',
+    closedView: '已关闭',
+    all: '全部',
+    emptyState: '还没有错题，先记录第一道吧。',
+    githubHint: '每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。',
+    noPlan: '当前没有待复习错题。先记录一条题目，再让代理给出计划。',
+    localSave: '学习计划已保存到本地',
+    githubSave: '学习计划已保存到 GitHub',
+    noToken: '未配置 GitHub Token，无法保存 studyplan.md'
+  },
+  en: {
+    collection: 'Collection',
+    title: 'Mistake Book',
+    tagline: 'Collect every mistake and learn from it.',
+    notConnected: 'Not connected',
+    refreshIssues: 'Refresh',
+    githubSettings: 'GitHub settings',
+    defaultSubject: 'Default subject',
+    save: 'Save',
+    saveAndSync: 'Save & sync',
+    newEntry: 'New',
+    record: 'Record',
+    exportTxt: 'Export TXT',
+    printSave: 'Print / Save',
+    studyAgent: 'Study agent',
+    studyAgentHint: 'Generate a review priority and action plan from the current mistake set.',
+    generatePlan: 'Generate plan',
+    mainView: 'Main',
+    solvedView: 'Solved',
+    closedView: 'Closed',
+    all: 'All',
+    emptyState: 'No mistakes yet. Add your first one.',
+    githubHint: 'Everyone can use their own GitHub repository. The config is saved in this browser only.',
+    noPlan: 'There are no pending mistakes. Add one to generate a plan.',
+    localSave: 'Study plan saved locally',
+    githubSave: 'Study plan saved to GitHub',
+    noToken: 'GitHub token is missing, so studyplan.md cannot be saved.'
+  }
+};
+let currentLanguage = localStorage.getItem('preferredLanguage') || 'zh';
+
+function setLanguage(lang) {
+  currentLanguage = lang === 'en' ? 'en' : 'zh';
+  localStorage.setItem('preferredLanguage', currentLanguage);
+  document.documentElement.lang = currentLanguage === 'en' ? 'en' : 'zh-CN';
+
+  document.querySelectorAll('[data-i18n]').forEach(element => {
+    const key = element.dataset.i18n;
+    const value = translations[currentLanguage][key];
+    if (value) element.textContent = value;
+  });
+
+  document.querySelectorAll('[data-placeholder-en],[data-placeholder-zh]').forEach(element => {
+    const placeholder = currentLanguage === 'en' ? element.dataset.placeholderEn : element.dataset.placeholderZh;
+    if (placeholder) element.placeholder = placeholder;
+  });
+
+  document.querySelectorAll('#langZh, #langEn').forEach(button => {
+    button.classList.toggle('active', button.id === (currentLanguage === 'en' ? 'langEn' : 'langZh'));
+  });
+
+  render();
+  document.title = currentLanguage === 'en' ? 'Mistake Book' : '老弟の神秘错题本';
+}
+
+function getText(key) {
+  return translations[currentLanguage][key] || translations.zh[key] || key;
+}
 
 // 默认只填写你的仓库身份，Token 必须由每位用户自行配置。
 const defaultGithubSettings = { owner: 'k-7-t', repo: 'k-7-t.github.io', token: '' };
@@ -24,6 +112,7 @@ let filter = '全部';
 let view = '主界面';
 let pullSequence = 0;
 let defaultSubject = localStorage.getItem('defaultSubject') || 'coding';
+let storageConfig = null;
 
 // 初始化本地缓存和默认科目。
 try {
@@ -134,6 +223,69 @@ async function githubGetIssues() {
   return issues.filter(issue => !issue.pull_request);
 }
 
+async function githubReadFile(path) {
+  const response = await fetch(githubUrl(`contents/${encodeURIComponent(path)}`), {
+    cache: 'no-store',
+    headers: githubHeaders()
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`读取 GitHub 文件失败（${response.status}）`);
+  const file = await response.json();
+  return decodeURIComponent(escape(atob(file.content.replace(/\s/g, ''))));
+}
+
+async function githubWriteFile(path, content, message) {
+  const existingResponse = await fetch(githubUrl(`contents/${encodeURIComponent(path)}`), {
+    cache: 'no-store',
+    headers: githubHeaders()
+  });
+  let sha;
+  if (existingResponse.ok) sha = (await existingResponse.json()).sha;
+  else if (existingResponse.status !== 404) throw new Error(`读取 GitHub 文件失败（${existingResponse.status}）`);
+  const response = await fetch(githubUrl(`contents/${encodeURIComponent(path)}`), {
+    method: 'PUT',
+    headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: btoa(unescape(encodeURIComponent(content))), sha })
+  });
+  if (!response.ok) throw new Error(`保存 GitHub 文件失败（${response.status}）`);
+}
+
+function mistakesMarkdown() {
+  return ['# 错题记录', '', '<!-- mistake-data-start -->', '```json', JSON.stringify(entries, null, 2), '```', '<!-- mistake-data-end -->'].join('\n');
+}
+
+function entriesFromMarkdown(markdown) {
+  const match = markdown?.match(/<!-- mistake-data-start -->\s*```json\s*([\s\S]*?)\s*```\s*<!-- mistake-data-end -->/);
+  if (!match) return [];
+  try {
+    const parsed = JSON.parse(match[1]);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+async function pullFromMarkdown() {
+  if (!syncConfigured()) return false;
+  const markdown = await githubReadFile(storageConfig.wrongAnswers.markdown.fileName);
+  if (markdown === null) return false;
+  entries = entriesFromMarkdown(markdown);
+  normalizeEntries();
+  setStatus(`已同步（${entries.length} 条错题）`, 'ok');
+  render();
+  return true;
+}
+
+async function pushToMarkdown() {
+  if (!syncConfigured()) return;
+  await githubWriteFile(
+    storageConfig.wrongAnswers.markdown.fileName,
+    mistakesMarkdown(),
+    `chore: update mistakes ${new Date().toISOString()}`
+  );
+  setStatus('错题已保存到 Markdown', 'ok');
+}
+
 async function githubWriteIssue(issue, entry) {
   const url = issue ? githubUrl(`issues/${issue.number}`) : githubUrl('issues');
   const response = await fetch(url, {
@@ -220,6 +372,45 @@ async function pushToGithub() {
   }
 }
 
+async function loadStorageConfig() {
+  const response = await fetch('./saving-option.json', { cache: 'no-store' });
+  if (!response.ok) throw new Error('无法读取保存配置');
+  const json = await response.json();
+  const wrongAnswers = json.wrongAnswers || {};
+  const studyPlan = json.studyPlan || {};
+  return {
+    ...json,
+    wrongAnswers: {
+      ...wrongAnswers,
+      defaultOption: ['local', 'markdown', 'issue'].includes(wrongAnswers.defaultOption) ? wrongAnswers.defaultOption : 'issue',
+      markdown: { fileName: 'mistakes.md', ...(wrongAnswers.markdown || {}) }
+    },
+    studyPlan: {
+      ...studyPlan,
+      defaultOption: ['local', 'markdown'].includes(studyPlan.defaultOption) ? studyPlan.defaultOption : 'markdown'
+    }
+  };
+}
+
+async function pullConfiguredWrongAnswers() {
+  if (storageConfig.wrongAnswers.defaultOption === 'local') {
+    try { entries = JSON.parse(localStorage.getItem('wrongAnswersCatalog') || '[]'); } catch (error) { entries = []; }
+    normalizeEntries();
+    render();
+    return true;
+  }
+  if (storageConfig.wrongAnswers.defaultOption === 'markdown') return pullFromMarkdown();
+  return pullFromGithub();
+}
+
+async function pushConfiguredWrongAnswers() {
+  if (!storageConfig) return;
+  const mode = storageConfig.wrongAnswers.defaultOption;
+  if (mode === 'local') { saveLocal(); return; }
+  if (mode === 'markdown') return pushToMarkdown();
+  return pushToGithub();
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, character => ({
     '&': '&amp;',
@@ -239,10 +430,11 @@ function tabColor(subject) {
 
 function renderTabs(currentEntries) {
   // 只根据当前视图生成“全部”和该视图拥有的科目按钮。
-  const subjects = ['全部', ...new Set(currentEntries.map(entry => entry.subject).filter(Boolean))];
-  tabsEl.innerHTML = subjects.map(subject =>
-    `<button class="tab ${subject === filter ? 'active' : ''}" data-s="${escapeHtml(subject)}">${escapeHtml(subject)}</button>`
-  ).join('');
+  const rawSubjects = ['全部', ...new Set(currentEntries.map(entry => entry.subject).filter(Boolean))];
+  tabsEl.innerHTML = rawSubjects.map(subject => {
+    const label = currentLanguage === 'en' ? (subject === '全部' ? 'All' : subject) : subject;
+    return `<button class="tab ${subject === filter ? 'active' : ''}" data-s="${escapeHtml(subject)}">${escapeHtml(label)}</button>`;
+  }).join('');
   tabsEl.querySelectorAll('.tab').forEach(button => {
     button.onclick = () => {
       filter = button.dataset.s;
@@ -252,9 +444,14 @@ function renderTabs(currentEntries) {
 }
 
 function renderViewTabs() {
-  const views = ['主界面', '已解决', '已关闭'];
-  viewTabsEl.innerHTML = views.map(item =>
-    `<button class="tab ${item === view ? 'active' : ''}" data-view="${item}">${item}</button>`
+  const rawViews = ['主界面', '已解决', '已关闭'];
+  const labels = {
+    主界面: currentLanguage === 'en' ? 'Main' : '主界面',
+    已解决: currentLanguage === 'en' ? 'Solved' : '已解决',
+    已关闭: currentLanguage === 'en' ? 'Closed' : '已关闭'
+  };
+  viewTabsEl.innerHTML = rawViews.map(item =>
+    `<button class="tab ${item === view ? 'active' : ''}" data-view="${item}">${labels[item]}</button>`
   ).join('');
   viewTabsEl.querySelectorAll('[data-view]').forEach(button => {
     button.onclick = () => {
@@ -277,7 +474,7 @@ function render() {
   const currentEntries = entriesForView();
   renderTabs(currentEntries);
   const shown = filter === '全部' ? currentEntries : currentEntries.filter(entry => entry.subject === filter);
-  countEl.textContent = shown.length ? `共 ${shown.length} 条错题` : '';
+  countEl.textContent = shown.length ? (currentLanguage === 'en' ? `Total ${shown.length} mistakes` : `共 ${shown.length} 条错题`) : '';
   list.innerHTML = shown.length ? shown.map(entry => {
     const index = entries.indexOf(entry);
     const color = entry.subject ? tabColor(entry.subject) : 'var(--gold)';
@@ -289,15 +486,15 @@ function render() {
         <div class="issue-receipt ${entry.issueNumber ? 'exists' : 'pending'}">
           ${entry.issueNumber
             ? `<a href="${escapeHtml(entry.issueUrl)}" target="_blank" rel="noopener">GitHub #${escapeHtml(entry.issueNumber)}</a>`
-            : '尚未同步'}
+            : (currentLanguage === 'en' ? 'Not synced yet' : '尚未同步')}
         </div>
         <p class="q">${escapeHtml(entry.question)}</p>
-        <div class="answer"><strong>订正： </strong>${escapeHtml(entry.answer || '下次记得补充错因。')}</div>
+        <div class="answer"><strong>${currentLanguage === 'en' ? 'Correction: ' : '订正： '}</strong>${escapeHtml(entry.answer || (currentLanguage === 'en' ? 'Remember to fill this in next time.' : '下次记得补充错因。'))}</div>
         ${entry.issueState !== 'closed'
-          ? `<button class="learned ${entry.learnt ? 'active' : ''}" onclick="toggleLearnt(${index})">${entry.learnt ? '标记为未学会' : '我已学会'}</button>`
+          ? `<button class="learned ${entry.learnt ? 'active' : ''}" onclick="toggleLearnt(${index})">${entry.learnt ? (currentLanguage === 'en' ? 'Mark as not learned' : '标记为未学会') : (currentLanguage === 'en' ? 'I have learned it' : '我已学会')}</button>`
           : ''}
       </article>`;
-  }).join('') : '<p class="empty glass">还没有错题，先记录第一道吧。</p>';
+  }).join('') : `<p class="empty glass">${getText('emptyState')}</p>`;
 }
 
 function removeEntry(index) {
@@ -307,14 +504,14 @@ function removeEntry(index) {
   entries.splice(index, 1);
   saveLocal();
   render();
-  pushToGithub();
+  pushConfiguredWrongAnswers();
 }
 
 function toggleLearnt(index) {
   entries[index].learnt = !entries[index].learnt;
   saveLocal();
   render();
-  pushToGithub();
+  pushConfiguredWrongAnswers();
 }
 
 document.querySelector('#add').onclick = () => {
@@ -330,7 +527,7 @@ document.querySelector('#add').onclick = () => {
   fields.forEach(id => {
     document.querySelector('#' + id).value = id === 'subject' ? defaultSubject : '';
   });
-  pushToGithub();
+  pushConfiguredWrongAnswers();
 };
 
 function exportTxt() {
@@ -348,8 +545,127 @@ function exportTxt() {
   URL.revokeObjectURL(link.href);
 }
 
+async function loadStudyPlanStorageConfig() {
+  if (storageConfig?.studyPlan) return {
+    storageMode: storageConfig.studyPlan.defaultOption,
+    fileName: storageConfig.studyPlan.markdown?.fileName || 'studyplan.md'
+  };
+  return { storageMode: 'markdown', fileName: 'studyplan.md' };
+}
+
+function saveStudyPlanLocally(planText) {
+  try {
+    localStorage.setItem('studyPlanMarkdown', planText);
+  } catch (error) {
+    // 浏览器本地存储不可用时仅保留当前内存内容。
+  }
+
+  const blob = new Blob([planText], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'studyplan.md';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function saveStudyPlanToGithub(planText) {
+  if (!syncConfigured()) {
+    setStatus(getText('noToken'), 'err');
+    return false;
+  }
+
+  const path = (await loadStudyPlanStorageConfig()).fileName;
+  const message = `chore: update study plan ${new Date().toISOString()}`;
+  const content = btoa(unescape(encodeURIComponent(planText)));
+
+  try {
+    const headResponse = await fetch(githubUrl(`contents/${encodeURIComponent(path)}`), {
+      cache: 'no-store',
+      headers: githubHeaders()
+    });
+
+    let sha;
+    if (headResponse.ok) {
+      const existing = await headResponse.json();
+      sha = existing.sha;
+    } else if (headResponse.status !== 404) {
+      throw new Error(`读取 GitHub 文件失败（${headResponse.status}）`);
+    }
+
+    const response = await fetch(githubUrl(`contents/${encodeURIComponent(path)}`), {
+      method: 'PUT',
+      headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, content, sha })
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`保存到 GitHub 失败（${response.status}：${detail.slice(0, 120)}）`);
+    }
+
+    setStatus(getText('githubSave'), 'ok');
+    return true;
+  } catch (error) {
+    setStatus(`保存失败：${error.message}`, 'err');
+    return false;
+  }
+}
+
+async function saveStudyPlan(planText) {
+  const config = await loadStudyPlanStorageConfig();
+  if (config.storageMode === 'local') {
+    saveStudyPlanLocally(planText);
+    setStatus(getText('localSave'), 'ok');
+    return true;
+  }
+  return saveStudyPlanToGithub(planText);
+}
+
+async function generateStudyPlan() {
+  const activeEntries = entries.filter(entry => entry.issueState !== 'closed');
+  if (!activeEntries.length) {
+    const planText = ['# 学习计划', '', getText('noPlan')].join('\n');
+    agentOutputEl.value = planText;
+    await saveStudyPlan(planText);
+    return;
+  }
+
+  const summary = new Map();
+  for (const entry of activeEntries) {
+    const subject = entry.subject || '未分类';
+    summary.set(subject, (summary.get(subject) || 0) + 1);
+  }
+
+  const rankedSubjects = [...summary.entries()].sort((a, b) => b[1] - a[1]);
+  const topSubjects = rankedSubjects.slice(0, 3).map(([subject, count]) => `${subject}（${count} 条）`).join('、') || '暂无';
+  const total = activeEntries.length;
+  const unresolved = activeEntries.filter(entry => !entry.learnt).length;
+  const learned = total - unresolved;
+  const firstSubject = rankedSubjects[0]?.[0] || '未分类';
+
+  const planLines = [
+    '# 学习计划',
+    '',
+    `- 当前待复习共 ${total} 条，其中已学会 ${learned} 条，尚未掌握 ${unresolved} 条。`,
+    `- 优先级最高的科目：${topSubjects}。`,
+    `- 建议先从「${firstSubject}」开始，按 1：复述知识点 2：重做题目 3：总结误区 的顺序复盘。`,
+    '- 如果今天只能处理 20 分钟，先做 3 道最容易忘的题，再补 1 道高频题。',
+    '- 完成复盘后，把“正确答案/本次学到的内容”补全，确保下一次生成计划更精准。'
+  ];
+
+  const planText = planLines.join('\n');
+  agentOutputEl.value = planText;
+  await saveStudyPlan(planText);
+}
+
 document.querySelector('#export').onclick = exportTxt;
 document.querySelector('#print').onclick = () => window.print();
+document.querySelector('#generatePlan').onclick = generateStudyPlan;
+document.getElementById('langZh').onclick = () => setLanguage('zh');
+document.getElementById('langEn').onclick = () => setLanguage('en');
 document.querySelector('#saveSubject').onclick = () => {
   defaultSubject = defaultSubjectInput.value.trim() || 'coding';
   defaultSubjectInput.value = defaultSubject;
@@ -377,6 +693,13 @@ document.querySelector('#saveGithubSettings').onclick = () => {
   pullFromGithub();
 };
 
+setLanguage(currentLanguage);
 render();
-if (syncConfigured()) pullFromGithub();
-else setStatus('未连接', '');
+(async () => {
+  try {
+    storageConfig = await loadStorageConfig();
+    await pullConfiguredWrongAnswers();
+  } catch (error) {
+    setStatus(`读取保存配置失败：${error.message}`, 'err');
+  }
+})();

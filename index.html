@@ -11,47 +11,62 @@
 <body>
 <div class="wrap">
   <div class="plate">
-    <span class="drawer">合集</span>
-    <h1>错题本</h1>
-    <p>快把错题放进来.</p>
+    <div class="top-row">
+      <span class="drawer" data-i18n="collection">合集</span>
+      <div class="lang-toggle" aria-label="Language switch">
+        <button class="ghost small active" id="langZh" type="button">中文</button>
+        <button class="ghost small" id="langEn" type="button">EN</button>
+      </div>
+    </div>
+    <h1 data-i18n="title">错题本</h1>
+    <p data-i18n="tagline">快把错题放进来.</p>
     <div class="sync-row">
-      <span id="syncStatus" class="sync-status">未连接</span>
-      <button class="ghost small" id="refreshIssues">刷新错题</button>
-      <button class="ghost small" id="githubSettingsToggle">GitHub 设置</button>
+      <span id="syncStatus" class="sync-status" data-i18n="notConnected">未连接</span>
+      <button class="ghost small" id="refreshIssues" data-i18n="refreshIssues">刷新错题</button>
+      <button class="ghost small" id="githubSettingsToggle" data-i18n="githubSettings">GitHub 设置</button>
     </div>
     <div class="subject-settings">
-      <label for="defaultSubject">默认科目</label>
+      <label for="defaultSubject" data-i18n="defaultSubject">默认科目</label>
       <input id="defaultSubject" maxlength="40">
-      <button class="ghost small" id="saveSubject">保存</button>
+      <button class="ghost small" id="saveSubject" data-i18n="save">保存</button>
     </div>
   </div>
 
   <div class="glass settings" id="githubSettingsPanel" hidden>
-    <p class="slip-label">GitHub 设置</p>
-    <p class="hint">每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。</p>
+    <p class="slip-label" data-i18n="githubSettings">GitHub 设置</p>
+    <p class="hint" data-i18n="githubHint">每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。</p>
     <div class="row">
-      <input id="ghOwner" placeholder="GitHub 用户名">
-      <input id="ghRepo" placeholder="仓库名称">
+      <input id="ghOwner" placeholder="GitHub 用户名" data-placeholder-en="GitHub username" data-placeholder-zh="GitHub 用户名">
+      <input id="ghRepo" placeholder="仓库名称" data-placeholder-en="Repository name" data-placeholder-zh="仓库名称">
     </div>
-    <input id="ghToken" type="password" placeholder="GitHub Token">
+    <input id="ghToken" type="password" placeholder="GitHub Token" data-placeholder-en="GitHub Token" data-placeholder-zh="GitHub Token">
     <div class="actions">
-      <button class="primary" id="saveGithubSettings">保存并同步</button>
+      <button class="primary" id="saveGithubSettings" data-i18n="saveAndSync">保存并同步</button>
     </div>
   </div>
 
   <div class="slip glass">
-    <p class="slip-label">新题</p>
+    <p class="slip-label" data-i18n="newEntry">新题</p>
     <div class="row">
-        <input id="subject" placeholder="科目" maxlength="40">
-        <input id="title" placeholder="题目标题" maxlength="80">
+        <input id="subject" placeholder="科目" maxlength="40" data-placeholder-en="Subject" data-placeholder-zh="科目">
+        <input id="title" placeholder="题目标题" maxlength="80" data-placeholder-en="Question title" data-placeholder-zh="题目标题">
     </div>
-      <textarea id="question" placeholder="哪里做错了？"></textarea>
-      <textarea id="answer" placeholder="正确答案或本次学到的内容……"></textarea>
+      <textarea id="question" placeholder="哪里做错了？" data-placeholder-en="Where did it go wrong?" data-placeholder-zh="哪里做错了？"></textarea>
+      <textarea id="answer" placeholder="正确答案或本次学到的内容……" data-placeholder-en="Correct answer or what you learned this time…" data-placeholder-zh="正确答案或本次学到的内容……"></textarea>
     <div class="actions">
-      <button class="primary" id="add">记录</button>
-      <button class="ghost" id="export">导出 TXT</button>
-      <button class="ghost" id="print">打印/保存</button>
+      <button class="primary" id="add" data-i18n="record">记录</button>
+      <button class="ghost" id="export" data-i18n="exportTxt">导出 TXT</button>
+      <button class="ghost" id="print" data-i18n="printSave">打印/保存</button>
     </div>
+  </div>
+
+  <div class="slip glass agent-panel">
+    <p class="slip-label" data-i18n="studyAgent">学习代理</p>
+    <p class="hint" data-i18n="studyAgentHint">根据当前错题库生成复习优先级与行动建议。</p>
+    <div class="actions agent-actions">
+      <button class="primary" id="generatePlan" data-i18n="generatePlan">生成计划</button>
+    </div>
+    <textarea id="agentOutput" class="agent-output" readonly data-placeholder-en="Click “Generate plan” to get a review suggestion based on your current mistake set." data-placeholder-zh="点击“生成计划”后，代理会根据错题分布给出复习建议。"></textarea>
   </div>
 
   <div class="view-tabs" id="viewTabs"></div>

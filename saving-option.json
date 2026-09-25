@@ -1,0 +1,63 @@
+{
+  "howToChange": {
+    "zh": [
+      "只修改 wrongAnswers.defaultOption 或 studyPlan.defaultOption。",
+      "错题可选值：local、markdown、issue；学习计划可选值：local、markdown。",
+      "保存文件后刷新网站；网站启动时会读取本文件并按新选项加载数据。",
+      "使用 markdown 或 issue 时，必须先在网页 GitHub 设置中填写 owner、repo 和 Token。"
+    ],
+    "en": [
+      "Only change wrongAnswers.defaultOption or studyPlan.defaultOption.",
+      "Wrong-answer options: local, markdown, issue; study-plan options: local, markdown.",
+      "Save the file and refresh the website; startup reads this file and loads data using the selected option.",
+      "For markdown or issue, enter owner, repo, and Token in the website GitHub settings first."
+    ]
+  },
+  "examples": {
+    "localWrongAnswers": "wrongAnswers.defaultOption = local",
+    "markdownWrongAnswers": "wrongAnswers.defaultOption = markdown",
+    "issueWrongAnswers": "wrongAnswers.defaultOption = issue",
+    "localStudyPlan": "studyPlan.defaultOption = local",
+    "markdownStudyPlan": "studyPlan.defaultOption = markdown"
+  },
+  "wrongAnswers": {
+    "options": ["local", "markdown", "issue"],
+    "defaultOption": "issue",
+    "readOnStartup": true,
+    "local": {
+      "source": "localStorage:wrongAnswersCatalog",
+      "description": "保存在本浏览器；每次打开网站读取并显示。"
+    },
+    "markdown": {
+      "fileName": "mistakes.md",
+      "source": "GitHub repository file",
+      "description": "保存为 GitHub 仓库中的 Markdown 文件；每次打开网站从云端读取并显示。"
+    },
+    "issue": {
+      "source": "GitHub Issues",
+      "description": "保存为 GitHub Issue；每次打开网站从云端读取并显示。"
+    }
+  },
+  "studyPlan": {
+    "options": ["local", "markdown"],
+    "defaultOption": "markdown",
+    "local": {
+      "fileName": "studyplan.md",
+      "source": "browser download and localStorage:studyPlanMarkdown"
+    },
+    "markdown": {
+      "fileName": "studyplan.md",
+      "source": "GitHub repository file"
+    }
+  },
+  "otherSaveableData": {
+    "local": [
+      "defaultSubject (localStorage)",
+      "githubSettings (localStorage)",
+      "preferredLanguage (localStorage)",
+      "mistakes.txt (manual local export)"
+    ],
+    "markdown": ["conversation-log.md"]
+  },
+  "notes": "开发者只需修改 defaultOption；可选值必须来自对应的 options。"
+}
