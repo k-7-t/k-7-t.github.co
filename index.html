@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -15,42 +15,46 @@
     <h1>错题本</h1>
     <p>快把错题放进来.</p>
     <div class="sync-row">
-      <span id="syncStatus" class="sync-status">Not connected</span>
-      <button class="ghost small" id="settingsToggle">GitHub sync</button>
+      <span id="syncStatus" class="sync-status">未连接</span>
+      <button class="ghost small" id="refreshIssues">刷新错题</button>
+      <button class="ghost small" id="githubSettingsToggle">GitHub 设置</button>
+    </div>
+    <div class="subject-settings">
+      <label for="defaultSubject">默认科目</label>
+      <input id="defaultSubject" maxlength="40">
+      <button class="ghost small" id="saveSubject">保存</button>
     </div>
   </div>
 
-  <div class="glass settings" id="settingsPanel" hidden>
-    <p class="slip-label">Connect a GitHub repo</p>
-    <p class="hint">Needs a token with repo contents access. Stored only in this browser's localStorage and sent directly to GitHub — never share this page's source with anyone you don't trust with that token.</p>
+  <div class="glass settings" id="githubSettingsPanel" hidden>
+    <p class="slip-label">GitHub 设置</p>
+    <p class="hint">每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。</p>
     <div class="row">
-      <input id="ghOwner" placeholder="Repo owner (username)">
-      <input id="ghRepo" placeholder="Repo name">
+      <input id="ghOwner" placeholder="GitHub 用户名">
+      <input id="ghRepo" placeholder="仓库名称">
     </div>
-    <div class="row">
-      <input id="ghPath" placeholder="File path (mistakes.md)">
-      <input id="ghBranch" placeholder="Branch (main)">
-    </div>
-    <input id="ghToken" type="password" placeholder="Personal access token" style="margin-bottom:12px">
+    <input id="ghToken" type="password" placeholder="GitHub Token">
     <div class="actions">
-      <button class="primary" id="ghConnect">Save & sync</button>
+      <button class="primary" id="saveGithubSettings">保存并同步</button>
     </div>
   </div>
 
   <div class="slip glass">
     <p class="slip-label">新题</p>
     <div class="row">
-      <input id="subject" placeholder="Subject" maxlength="40">
-      <input id="title" placeholder="Question title" maxlength="80">
+        <input id="subject" placeholder="科目" maxlength="40">
+        <input id="title" placeholder="题目标题" maxlength="80">
     </div>
-    <textarea id="question" placeholder="What did you get wrong?"></textarea>
-    <textarea id="answer" placeholder="Correct answer or lesson learned..."></textarea>
+      <textarea id="question" placeholder="哪里做错了？"></textarea>
+      <textarea id="answer" placeholder="正确答案或本次学到的内容……"></textarea>
     <div class="actions">
       <button class="primary" id="add">记录</button>
+      <button class="ghost" id="export">导出 TXT</button>
       <button class="ghost" id="print">打印/保存</button>
     </div>
   </div>
 
+  <div class="view-tabs" id="viewTabs"></div>
   <div class="tabs" id="tabs"></div>
   <p class="count" id="count"></p>
   <section id="list" aria-live="polite"></section>
