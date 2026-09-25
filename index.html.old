@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Wrong Questions Booklet</title>
+	<style>
+		:root { --ink: #243044; --paper: #fffdf7; --accent: #c94c4c; --line: #d8cdb9; }
+		* { box-sizing: border-box; }
+		body { margin: 0; color: var(--ink); background: #e8e0d2; font: 16px/1.5 Georgia, serif; }
+		.booklet { max-width: 850px; margin: 32px auto; padding: 28px; background: var(--paper); box-shadow: 0 8px 25px #0002; }
+		header { text-align: center; border-bottom: 3px double var(--line); padding-bottom: 18px; }
+		h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); color: var(--accent); }
+		.subtitle { margin: 6px 0 0; color: #657080; }
+		.controls { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin: 22px 0; }
+		input, textarea, button { font: inherit; border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+		textarea { min-height: 85px; resize: vertical; grid-column: 1 / -1; }
+		button { cursor: pointer; background: var(--accent); color: white; border: 0; font-weight: bold; }
+		button.secondary { background: #657080; }
+		.question { position: relative; padding: 18px 45px 18px 0; border-bottom: 1px dashed var(--line); }
+		.question h2 { margin: 0 0 5px; font-size: 1.15rem; }
+		.question p { margin: 0; white-space: pre-wrap; }
+		.answer { margin-top: 10px; padding: 10px; background: #fff4d8; border-left: 4px solid #e0ad45; }
+		.remove { position: absolute; right: 0; top: 18px; padding: 4px 8px; background: transparent; color: var(--accent); }
+		.empty { text-align: center; color: #7a7f87; padding: 25px; }
+		@media (max-width: 600px) { .booklet { margin: 0; min-height: 100vh; padding: 20px; } .controls { grid-template-columns: 1fr; } }
+		@media print { body { background: white; } .booklet { margin: 0; box-shadow: none; max-width: none; } .controls, .remove { display: none; } }
+	</style>
+</head>
+<body>
+	<main class="booklet">
+		<header>
+			<h1>My Wrong Questions</h1>
+			<p class="subtitle">A little booklet for learning from mistakes</p>
+		</header>
+
+		<section class="controls" aria-label="Add a question">
+			<input id="subject" placeholder="Subject (e.g. Biology)" maxlength="60">
+			<input id="title" placeholder="Question title" maxlength="100">
+			<textarea id="question" placeholder="What question did you get wrong?"></textarea>
+			<textarea id="answer" placeholder="Write the correct answer or what you learned..."></textarea>
+			<button id="add">Add to booklet</button>
+			<button class="secondary" id="print">Print booklet</button>
+		</section>
+
+		<section id="list" aria-live="polite"></section>
+	</main>
+	<script>
+		const list = document.querySelector('#list');
+		const fields = ['subject', 'title', 'question', 'answer'];
+		let entries = JSON.parse(localStorage.getItem('wrongQuestions') || '[]');
+
+		function save() { localStorage.setItem('wrongQuestions', JSON.stringify(entries)); }
+		function render() {
+			list.innerHTML = entries.length ? entries.map((entry, index) => `
+				<article class="question">
+					<button class="remove" aria-label="Remove question" onclick="removeEntry(${index})">×</button>
+					<h2>${escapeHtml(entry.title || 'Untitled question')} ${entry.subject ? `<small>(${escapeHtml(entry.subject)})</small>` : ''}</h2>
+					<p>${escapeHtml(entry.question)}</p>
+					<div class="answer"><strong>Correct answer / lesson:</strong><br>${escapeHtml(entry.answer || 'Add a lesson next time.')}</div>
+				</article>`).join('') : '<p class="empty">Your booklet is empty. Add your first mistake above.</p>';
+		}
+		function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+		function removeEntry(index) { entries.splice(index, 1); save(); render(); }
+		document.querySelector('#add').onclick = () => {
+			const data = Object.fromEntries(fields.map(id => [id, document.querySelector('#' + id).value.trim()]));
+			if (!data.question) return alert('Please write the question you got wrong.');
+			entries.unshift(data); save(); render(); fields.forEach(id => document.querySelector('#' + id).value = '');
+		};
+		document.querySelector('#print').onclick = () => window.print();
+		render();
+	</script>
+</body>
+</html>
