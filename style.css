@@ -1,3 +1,4 @@
+/* 主题变量与安全区域默认值。 / Theme variables and safe-area defaults. */
 :root {
   --bg1: #a7c7ff;
   --bg2: #f6b6d6;
@@ -31,6 +32,7 @@
 }
 *, *::before, *::after { box-sizing: inherit; }
 
+/* 系统深色主题的兼容默认值。 / Compatibility defaults for system dark mode. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg1: #2a3a6b; --bg2: #5a2a55; --bg3: #4a3a1a;
@@ -52,6 +54,7 @@
   --red: #e08b78; --gold: #e0b969;
 }
 
+/* 页面背景使用多层渐变，并支持设备安全区。 / Use layered gradients and support device safe areas. */
 html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
 body {
   margin: 0;
@@ -71,8 +74,10 @@ body {
 }
 :root[data-theme="dark"] body { background-color: #14131a; }
 
+/* 主内容容器保持窄幅，方便阅读和移动端适配。 / Keep the content column narrow for readability and mobile layout. */
 .wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 90px; }
 
+/* 顶部标题与控制区域。 / Header title and control area. */
 .plate { text-align: center; margin-bottom: 28px; }
 .top-row {
   position: relative;
@@ -121,6 +126,60 @@ h1 {
   margin: 0 0 8px;
   letter-spacing: -0.01em;
 }
+.title-typing {
+  display: block;
+  width: min(100%, 420px);
+  margin: 0 auto 8px;
+  padding: 0 4px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  caret-color: transparent !important;
+  text-align: center;
+  font-family: "Source Serif 4", serif;
+  font-size: clamp(2.1rem, 6vw, 3rem);
+  font-weight: 700;
+  line-height: 1.2;
+  user-select: text;
+  cursor: default;
+}
+.tagline-typing {
+  display: block;
+  width: min(100%, 340px);
+  margin: 0 auto 8px;
+  padding: 0 4px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-soft);
+  caret-color: transparent !important;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  user-select: text;
+  cursor: default;
+}
+.typing-text { display: inline; }
+.typing-caret {
+  display: none;
+  width: 2px;
+  height: 1em;
+  margin-left: 4px;
+  vertical-align: -0.12em;
+  background: var(--main-color);
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(1px);
+  animation: typing-caret-blink 0.9s steps(1, end) infinite;
+}
+.tagline-typing .typing-caret { background: var(--secondary-color); }
+.typing-caret.active { display: inline-block; }
+@keyframes typing-caret-blink {
+  0%, 45% { opacity: 1; }
+  46%, 100% { opacity: 0; }
+}
 .plate p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
 .sync-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; }
 .sync-status { font-size: 0.78rem; color: var(--ink-soft); }
@@ -145,6 +204,7 @@ button.small { padding: 7px 14px; font-size: 0.78rem; }
 .settings { padding: 22px; margin-bottom: 30px; }
 .settings .hint { font-size: 0.82rem; color: var(--ink-soft); margin: 0 0 16px; line-height: 1.5; }
 
+/* 统一玻璃面板效果。 / Shared glass-panel styling. */
 .glass {
   background: var(--glass);
   backdrop-filter: blur(22px) saturate(170%);
@@ -154,6 +214,7 @@ button.small { padding: 7px 14px; font-size: 0.78rem; }
   box-shadow: 0 8px 32px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.35);
 }
 
+/* 视图和科目筛选按钮。 / View and subject filter buttons. */
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 30px; }
 .view-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 12px; }
 .tab {
@@ -210,6 +271,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: 0.8
 input:focus, textarea:focus { border-color: var(--red); }
 textarea { resize: vertical; min-height: 60px; margin-bottom: 12px; }
 .actions { display: flex; gap: 10px; margin-top: 8px; }
+/* 主要按钮、普通按钮和按下状态。 / Primary, ghost, and pressed button states. */
 button.primary, button.ghost {
   font-family: "Inter", sans-serif;
   font-weight: 600;
@@ -234,6 +296,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, .tab:focus-vi
   outline: 2px solid var(--focus-color); outline-offset: 2px;
 }
 
+/* 单条错题卡片及其状态信息。 / Individual mistake cards and their status details. */
 .card {
   position: relative;
   padding: 22px 48px 22px 24px;
@@ -324,11 +387,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, .tab:focus-vi
 }
 .count { text-align: center; color: var(--ink-soft); font-size: 0.78rem; margin: -20px 0 24px; letter-spacing: 0.06em; }
 
+/* 打印时隐藏交互控件并移除玻璃效果。 / Hide interactive controls and glass effects when printing. */
 @media print {
   body { background: white; }
   .slip, .tabs, .remove { display: none; }
   .glass, .card { backdrop-filter: none; background: white; box-shadow: none; border-color: #ccc; }
 }
+/* 固定在安全区域内的圆形主题按钮。 / Circular theme button fixed inside the safe area. */
 .theme-toggle {
   position: fixed;
   top: max(12px, env(safe-area-inset-top, 0px));

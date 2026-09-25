@@ -1,0 +1,213 @@
+{
+  "documentation": {
+    "zh_cn": "本文件是项目唯一的开发者配置入口。修改对应区域后刷新网站即可生效；JSON 使用 documentation 字段记录说明，因为标准 JSON 不允许 // 注释。",
+    "en_us": "This file is the project's single developer configuration entry. Edit the relevant section and refresh the site; the documentation field is used because standard JSON does not allow // comments."
+  },
+  "defaults": {
+    "language": "zh_cn",
+    "theme": "dark",
+    "subject": "coding"
+  },
+  "behavior": {
+    "titleTypingStartDelayMs": 500,
+    "titleTypingDelayMs": 140,
+    "taglineTypingPauseMs": 500,
+    "taglineTypingDelayMs": 120
+  },
+  "text": {
+    "zh_cn": {
+      "pageTitle": "老弟の神秘错题本",
+      "collection": "合集",
+      "title": "错题本",
+      "tagline": "快把错题放进来",
+      "notConnected": "未连接",
+      "refreshIssues": "刷新错题",
+      "githubSettings": "GitHub 设置",
+      "defaultSubject": "默认科目",
+      "save": "保存",
+      "saveAndSync": "保存并同步",
+      "newEntry": "新题",
+      "record": "记录",
+      "exportTxt": "导出 TXT",
+      "printSave": "打印/保存",
+      "studyAgent": "学习代理",
+      "studyAgentHint": "根据当前错题库生成复习优先级与行动建议。",
+      "generatePlan": "生成计划",
+      "mainView": "主界面",
+      "solvedView": "已解决",
+      "closedView": "已关闭",
+      "all": "全部",
+      "emptyState": "还没有错题，先记录第一道吧。",
+      "githubHint": "每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。",
+      "noPlan": "当前没有待复习错题。先记录一条题目，再让代理给出计划。",
+      "localSave": "学习计划已保存到本地",
+      "githubSave": "学习计划已保存到 GitHub",
+      "noToken": "未配置 GitHub Token，无法保存 studyplan.md"
+    },
+    "en_us": {
+      "pageTitle": "Mistake Book",
+      "collection": "Collection",
+      "title": "Mistake Book",
+      "tagline": "Collect every mistake and learn from it.",
+      "notConnected": "Not connected",
+      "refreshIssues": "Refresh",
+      "githubSettings": "GitHub settings",
+      "defaultSubject": "Default subject",
+      "save": "Save",
+      "saveAndSync": "Save & sync",
+      "newEntry": "New",
+      "record": "Record",
+      "exportTxt": "Export TXT",
+      "printSave": "Print / Save",
+      "studyAgent": "Study agent",
+      "studyAgentHint": "Generate a review priority and action plan from the current mistake set.",
+      "generatePlan": "Generate plan",
+      "mainView": "Main",
+      "solvedView": "Solved",
+      "closedView": "Closed",
+      "all": "All",
+      "emptyState": "No mistakes yet. Add your first one.",
+      "githubHint": "Everyone can use their own GitHub repository. The config is saved in this browser only.",
+      "noPlan": "There are no pending mistakes. Add one to generate a plan.",
+      "localSave": "Study plan saved locally",
+      "githubSave": "Study plan saved to GitHub",
+      "noToken": "GitHub token is missing, so studyplan.md cannot be saved."
+    }
+  },
+  "placeholders": {
+    "zh_cn": {
+      "defaultSubject": "",
+      "ghOwner": "GitHub 用户名",
+      "ghRepo": "仓库名称",
+      "ghToken": "GitHub Token",
+      "subject": "科目",
+      "title": "题目标题",
+      "question": "哪里做错了？",
+      "answer": "正确答案或本次学到的内容……",
+      "agentOutput": "点击“生成计划”后，代理会根据错题分布给出复习建议。"
+    },
+    "en_us": {
+      "defaultSubject": "",
+      "ghOwner": "GitHub username",
+      "ghRepo": "Repository name",
+      "ghToken": "GitHub Token",
+      "subject": "Subject",
+      "title": "Question title",
+      "question": "Where did it go wrong?",
+      "answer": "Correct answer or what you learned this time…",
+      "agentOutput": "Click “Generate plan” to get a review suggestion based on your current mistake set."
+    }
+  },
+  "theme": {
+    "light": {
+      "cssVariables": {
+        "--bg1": "#9fc5ea",
+        "--bg2": "#d3c8eb",
+        "--bg3": "#f4d8c1",
+        "--body-base": "#eef4fb",
+        "--ink": "#243b53",
+        "--ink-soft": "#5b7088",
+        "--glass": "rgba(255,255,255,0.72)",
+        "--glass-strong": "rgba(255,255,255,0.88)",
+        "--glass-border": "rgba(255,255,255,0.9)",
+        "--shadow": "rgba(63,96,122,0.16)",
+        "--input-bg": "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(239,246,255,0.78) 100%)",
+        "--output-bg": "linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(219,234,254,0.64) 100%)",
+        "--red": "#5f8fc5",
+        "--gold": "#8aaed6",
+        "--main-color": "#5f8fc5",
+        "--secondary-color": "#8aaed6",
+        "--button-primary-bg": "linear-gradient(135deg, #8db8e8 0%, #5f8fc5 100%)",
+        "--button-primary-border": "#5f8fc5",
+        "--button-primary-text": "#ffffff",
+        "--button-ghost-bg": "linear-gradient(135deg, rgba(255,255,255,0.94) 0%, rgba(219,234,254,0.76) 100%)",
+        "--button-ghost-text": "#496984",
+        "--button-pressed-bg": "linear-gradient(135deg, #7aa9d8 0%, #4f78a6 100%)",
+        "--button-pressed-border": "#4f78a6",
+        "--button-pressed-text": "#ffffff",
+        "--focus-color": "#6f9ed1",
+        "--status-ok": "#4d9874"
+      }
+    },
+    "dark": {
+      "cssVariables": {
+        "--bg1": "#2a3a6b",
+        "--bg2": "#5a2a55",
+        "--bg3": "#4a3a1a",
+        "--body-base": "#14131a",
+        "--ink": "#f1ecdf",
+        "--ink-soft": "#b7ae9b",
+        "--glass": "rgba(30,28,24,0.42)",
+        "--glass-strong": "rgba(35,32,27,0.6)",
+        "--glass-border": "rgba(255,255,255,0.14)",
+        "--shadow": "rgba(0,0,0,0.5)",
+        "--input-bg": "rgba(0,0,0,0.2)",
+        "--output-bg": "rgba(0,0,0,0.2)",
+        "--red": "#e08b78",
+        "--gold": "#e0b969",
+        "--main-color": "#e08b78",
+        "--secondary-color": "#e0b969",
+        "--button-primary-bg": "#e08b78",
+        "--button-primary-border": "#e08b78",
+        "--button-primary-text": "#1c2230",
+        "--button-ghost-bg": "rgba(30,28,24,0.42)",
+        "--button-ghost-text": "#b7ae9b",
+        "--button-pressed-bg": "#3f607a",
+        "--button-pressed-border": "#3f607a",
+        "--button-pressed-text": "#ffffff",
+        "--focus-color": "#e08b78",
+        "--status-ok": "#8ac7a1"
+      }
+    }
+  },
+  "storage": {
+    "howToChange": {
+      "zh_cn": [
+        "只修改 wrongAnswers.defaultOption 或 studyPlan.defaultOption。",
+        "错题可选值：local、markdown、issue；学习计划可选值：local、markdown。",
+        "保存文件后刷新网站；网站启动时会读取本文件并按新选项加载数据。",
+        "使用 markdown 或 issue 时，必须先在网页 GitHub 设置中填写 owner、repo 和 Token。"
+      ],
+      "en_us": [
+        "Only change wrongAnswers.defaultOption or studyPlan.defaultOption.",
+        "Wrong-answer options: local, markdown, issue; study-plan options: local, markdown.",
+        "Save the file and refresh the website; startup reads this file and loads data using the selected option.",
+        "For markdown or issue, enter owner, repo, and Token in the website GitHub settings first."
+      ]
+    },
+    "wrongAnswers": {
+      "options": ["local", "markdown", "issue"],
+      "defaultOption": "issue",
+      "readOnStartup": true,
+      "local": { "source": "localStorage:wrongAnswersCatalog", "description": "保存在本浏览器；每次打开网站读取并显示。" },
+      "markdown": { "fileName": "mistakes.md", "source": "GitHub repository file", "description": "保存为 GitHub 仓库中的 Markdown 文件；每次打开网站从云端读取并显示。" },
+      "issue": { "source": "GitHub Issues", "description": "保存为 GitHub Issue；每次打开网站从云端读取并显示。" }
+    },
+    "studyPlan": {
+      "options": ["local", "markdown"],
+      "defaultOption": "markdown",
+      "local": { "fileName": "studyplan.md", "source": "browser download and localStorage:studyPlanMarkdown" },
+      "markdown": { "fileName": "studyplan.md", "source": "GitHub repository file" }
+    },
+    "otherSaveableData": {
+      "local": ["defaultSubject (localStorage)", "githubSettings (localStorage)", "preferredLanguage (localStorage)", "mistakes.txt (manual local export)"],
+      "markdown": ["conversation-log.md"]
+    }
+  },
+  "howToChange": {
+    "zh_cn": [
+      "修改 text.zh_cn 或 text.en_us 可以更改双语页面文字。",
+      "修改 placeholders.zh_cn 或 placeholders.en_us 可以更改输入框提示。",
+      "修改 theme.light.cssVariables 或 theme.dark.cssVariables 可以更改主题颜色。",
+      "修改 storage.wrongAnswers.defaultOption 或 storage.studyPlan.defaultOption 可以更改保存位置。",
+      "保存 settings.json 后刷新网站即可生效。"
+    ],
+    "en_us": [
+      "Edit text.zh_cn or text.en_us to change bilingual page text.",
+      "Edit placeholders.zh_cn or placeholders.en_us to change input hints.",
+      "Edit theme.light.cssVariables or theme.dark.cssVariables to change theme colors.",
+      "Edit storage.wrongAnswers.defaultOption or storage.studyPlan.defaultOption to change storage targets.",
+      "Save settings.json and refresh the website to apply changes."
+    ]
+  }
+}

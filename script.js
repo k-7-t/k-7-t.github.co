@@ -6,12 +6,19 @@ const viewTabsEl = document.querySelector('#viewTabs');
 const subjectInput = document.querySelector('#subject');
 const defaultSubjectInput = document.querySelector('#defaultSubject');
 const agentOutputEl = document.querySelector('#agentOutput');
+const titleTypingEl = document.querySelector('#titleTyping');
+const taglineTypingEl = document.querySelector('#taglineTyping');
+const titleTypingTextEl = titleTypingEl.querySelector('.typing-text');
+const taglineTypingTextEl = taglineTypingEl.querySelector('.typing-text');
+const titleTypingCaretEl = titleTypingEl.querySelector('.typing-caret');
+const taglineTypingCaretEl = taglineTypingEl.querySelector('.typing-caret');
 const fields = ['subject', 'title', 'question', 'answer'];
 const translations = {
   zh_cn: {
+    pageTitle: '老弟の神秘错题本',
     collection: '合集',
     title: '错题本',
-    tagline: '快把错题放进来.',
+    tagline: '快把错题放进来',
     notConnected: '未连接',
     refreshIssues: '刷新错题',
     githubSettings: 'GitHub 设置',
@@ -37,6 +44,7 @@ const translations = {
     noToken: '未配置 GitHub Token，无法保存 studyplan.md'
   },
   en_us: {
+    pageTitle: 'Mistake Book',
     collection: 'Collection',
     title: 'Mistake Book',
     tagline: 'Collect every mistake and learn from it.',
@@ -67,6 +75,37 @@ const translations = {
 };
 let currentLanguage = localStorage.getItem('preferredLanguage') || 'zh_cn';
 if (!['zh_cn', 'en_us'].includes(currentLanguage)) currentLanguage = currentLanguage === 'en' ? 'en_us' : 'zh_cn';
+let settingsConfig = null;
+let titleTypingSequence = 0;
+
+async function typeTitle() {
+  const sequence = ++titleTypingSequence;
+  const title = translations[currentLanguage].title;
+  const tagline = translations[currentLanguage].tagline;
+  const behavior = settingsConfig?.behavior || {};
+  const startDelay = behavior.titleTypingStartDelayMs ?? 500;
+  const titleDelay = behavior.titleTypingDelayMs ?? 140;
+  const taglinePause = behavior.taglineTypingPauseMs ?? 500;
+  const taglineDelay = behavior.taglineTypingDelayMs ?? 120;
+  titleTypingTextEl.textContent = '';
+  taglineTypingTextEl.textContent = '';
+  titleTypingCaretEl.classList.add('active');
+  taglineTypingCaretEl.classList.remove('active');
+  await new Promise(resolve => window.setTimeout(resolve, startDelay));
+  for (const character of Array.from(title)) {
+    if (sequence !== titleTypingSequence) return;
+    titleTypingTextEl.textContent += character;
+    await new Promise(resolve => window.setTimeout(resolve, titleDelay));
+  }
+  await new Promise(resolve => window.setTimeout(resolve, taglinePause));
+  titleTypingCaretEl.classList.remove('active');
+  taglineTypingCaretEl.classList.add('active');
+  for (const character of Array.from(tagline)) {
+    if (sequence !== titleTypingSequence) return;
+    taglineTypingTextEl.textContent += character;
+    await new Promise(resolve => window.setTimeout(resolve, taglineDelay));
+  }
+}
 
 function setLanguage(lang) {
   currentLanguage = lang === 'en_us' ? 'en_us' : 'zh_cn';
@@ -80,7 +119,8 @@ function setLanguage(lang) {
   });
 
   document.querySelectorAll('[data-placeholder-en],[data-placeholder-zh]').forEach(element => {
-    const placeholder = currentLanguage === 'en_us' ? element.dataset.placeholderEn : element.dataset.placeholderZh;
+    const configuredPlaceholder = settingsConfig?.placeholders?.[currentLanguage]?.[element.id];
+    const placeholder = configuredPlaceholder ?? (currentLanguage === 'en_us' ? element.dataset.placeholderEn : element.dataset.placeholderZh);
     if (placeholder) element.placeholder = placeholder;
   });
 
@@ -89,7 +129,8 @@ function setLanguage(lang) {
   });
 
   render();
-  document.title = currentLanguage === 'en_us' ? 'Mistake Book' : '老弟の神秘错题本';
+  document.title = translations[currentLanguage].pageTitle;
+  typeTitle();
 }
 
 function getText(key) {
@@ -111,7 +152,7 @@ function setTheme(theme) {
   themeToggle.title = nextThemeLabel;
 }
 
-// 默认只填写你的仓库身份，Token 必须由每位用户自行配置。
+// 默认只填写你的仓库身份，Token 必须由每位用户自行配置。 / Only the repository identity is prefilled; each user must provide their own token.
 const defaultGithubSettings = { owner: 'k-7-t', repo: 'k-7-t.github.io', token: '' };
 let githubSettings = { ...defaultGithubSettings };
 try {
@@ -120,7 +161,7 @@ try {
     ...JSON.parse(localStorage.getItem('githubSettings') || '{}')
   };
 } catch (error) {
-  // 配置损坏时回退到默认仓库身份。
+  // 配置损坏时回退到默认仓库身份。 / Fall back to the default repository identity when the saved configuration is invalid.
 }
 
 let entries = [];
@@ -130,7 +171,7 @@ let pullSequence = 0;
 let defaultSubject = localStorage.getItem('defaultSubject') || 'coding';
 let storageConfig = null;
 
-// 初始化本地缓存和默认科目。
+// 初始化本地缓存和默认科目。 / Initialize the local cache and default subject.
 try {
   entries = JSON.parse(localStorage.getItem('wrongAnswersCatalog') || '[]');
 } catch (error) {
@@ -140,23 +181,23 @@ defaultSubjectInput.value = defaultSubject;
 subjectInput.value = defaultSubject;
 
 function saveLocal() {
-  // 浏览器禁用 localStorage 时，页面仍然可以继续使用内存中的数据。
+  // 浏览器禁用 localStorage 时，页面仍然可以继续使用内存中的数据。 / Keep using in-memory data when localStorage is unavailable.
   try {
     localStorage.setItem('wrongAnswersCatalog', JSON.stringify(entries));
   } catch (error) {
-    // 忽略本地存储不可用的情况。
+    // 忽略本地存储不可用的情况。 / Ignore local-storage failures.
   }
 }
 
 function newEntryId() {
-  // ID 用于把网页卡片和 GitHub Issue 一一对应。
+  // ID 用于把网页卡片和 GitHub Issue 一一对应。 / Use the ID to associate each page card with one GitHub Issue.
   return crypto.randomUUID
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function normalizeEntries() {
-  // 给旧数据补充 ID，避免升级后无法更新原来的 Issue。
+  // 给旧数据补充 ID，避免升级后无法更新原来的 Issue。 / Add IDs to legacy data so existing Issues remain updateable after upgrades.
   if (!Array.isArray(entries)) entries = [];
   entries = entries.map(entry => ({ ...entry, id: entry.id || newEntryId() }));
   saveLocal();
@@ -169,13 +210,13 @@ function syncConfigured() {
 }
 
 function setStatus(text, tone) {
-  // 顶部状态文字使用 tone 控制颜色：正常、忙碌或错误。
+  // 顶部状态文字使用 tone 控制颜色：正常、忙碌或错误。 / Use tone to color the status text for normal, busy, or error states.
   statusEl.textContent = text;
   statusEl.dataset.tone = tone || '';
 }
 
 function githubUrl(path = 'issues') {
-  // 所有请求都固定发往目标仓库。
+  // 所有请求都固定发往目标仓库。 / Send all requests to the configured repository.
   return `https://api.github.com/repos/${encodeURIComponent(githubSettings.owner)}/${encodeURIComponent(githubSettings.repo)}/${path}`;
 }
 
@@ -187,7 +228,7 @@ function githubHeaders() {
 }
 
 function issueBody(entry) {
-  // 保留隐藏 ID，GitHub Issue 才能和网页卡片稳定对应。
+  // 保留隐藏 ID，GitHub Issue 才能和网页卡片稳定对应。 / Preserve the hidden ID so the GitHub Issue stays linked to its page card.
   return [
     `<!-- wrong-answer-id: ${entry.id} -->`,
     `主题：${entry.subject || ''}`,
@@ -202,7 +243,7 @@ function issueBody(entry) {
 }
 
 function entryFromIssue(issue) {
-  // 同时兼容旧版英文格式和现在的中文格式。
+  // 同时兼容旧版英文格式和现在的中文格式。 / Support both the legacy English format and the current Chinese format.
   const body = issue.body || '';
   const marker = body.match(/wrong-answer-id:\s*([^\s>]+)/)?.[1];
   const id = marker || `github-issue-${issue.number}`;
@@ -229,7 +270,7 @@ function entryFromIssue(issue) {
 }
 
 async function githubGetIssues() {
-  // state=all 读取开放和已关闭的 Issue；no-store 防止刷新读取旧缓存。
+  // state=all 读取开放和已关闭的 Issue；no-store 防止刷新读取旧缓存。 / Read open and closed Issues with state=all; no-store prevents stale refresh results.
   const response = await fetch(githubUrl('issues?state=all&per_page=100'), {
     cache: 'no-store',
     headers: githubHeaders()
@@ -328,7 +369,7 @@ async function githubCloseIssue(issue) {
 }
 
 async function pullFromGithub() {
-  // 请求序号防止旧的并发请求覆盖最新的刷新结果。
+  // 请求序号防止旧的并发请求覆盖最新的刷新结果。 / Use request sequencing so an older concurrent request cannot overwrite newer results.
   if (!syncConfigured()) return false;
   const requestId = ++pullSequence;
   setStatus('正在读取 GitHub……', 'busy');
@@ -351,7 +392,7 @@ async function pullFromGithub() {
 }
 
 async function pushToGithub() {
-  // 写入或关闭后再次拉取，网页卡片显示 GitHub 的真实结果。
+  // 写入或关闭后再次拉取，网页卡片显示 GitHub 的真实结果。 / Pull again after writing or closing so cards show GitHub's actual state.
   if (!syncConfigured()) return;
   setStatus('正在同步 GitHub……', 'busy');
 
@@ -367,7 +408,7 @@ async function pushToGithub() {
       await githubWriteIssue(byId.get(entry.id), entry);
     }
 
-    // 当前网页管理仓库中的全部 Issue；从网页移除的卡片会被关闭。
+    // 当前网页管理仓库中的全部 Issue；从网页移除的卡片会被关闭。 / The page manages every repository Issue; removed cards are closed.
     for (const issue of issues) {
       const parsed = entryFromIssue(issue);
       if (!wanted.has(parsed.id)) {
@@ -388,14 +429,25 @@ async function pushToGithub() {
   }
 }
 
+let settingsPromise = null;
+
+async function loadSettings() {
+  if (!settingsPromise) {
+    settingsPromise = fetch('./settings.json', { cache: 'no-store' }).then(response => {
+      if (!response.ok) throw new Error('无法读取 settings.json');
+      return response.json();
+    });
+  }
+  return settingsPromise;
+}
+
 async function loadStorageConfig() {
-  const response = await fetch('./saving-option.json', { cache: 'no-store' });
-  if (!response.ok) throw new Error('无法读取保存配置');
-  const json = await response.json();
-  const wrongAnswers = json.wrongAnswers || {};
-  const studyPlan = json.studyPlan || {};
+  const json = await loadSettings();
+  const storage = json.storage || {};
+  const wrongAnswers = storage.wrongAnswers || {};
+  const studyPlan = storage.studyPlan || {};
   return {
-    ...json,
+    ...storage,
     wrongAnswers: {
       ...wrongAnswers,
       defaultOption: ['local', 'markdown', 'issue'].includes(wrongAnswers.defaultOption) ? wrongAnswers.defaultOption : 'issue',
@@ -410,19 +462,16 @@ async function loadStorageConfig() {
 
 async function loadThemeColors() {
   try {
-    const response = await fetch('./theme-colors.json', { cache: 'no-store' });
-    if (!response.ok) return;
-    const json = await response.json();
-    const variables = document.documentElement.dataset.theme === 'dark' && json.themes?.dark?.cssVariables
-      ? json.themes.dark.cssVariables
-      : json.cssVariables || {};
+    const json = await loadSettings();
+    const selectedTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    const variables = json.theme?.[selectedTheme]?.cssVariables || {};
     for (const [name, value] of Object.entries(variables)) {
       if (/^--[a-z0-9-]+$/i.test(name) && typeof value === 'string') {
         document.documentElement.style.setProperty(name, value);
       }
     }
   } catch (error) {
-    // 主题配置不可用时使用 style.css 中的默认颜色。
+    // 主题配置不可用时使用 style.css 中的默认颜色。 / Use the default colors from style.css when the theme configuration is unavailable.
   }
 }
 
@@ -463,7 +512,7 @@ function tabColor(subject) {
 }
 
 function renderTabs(currentEntries) {
-  // 只根据当前视图生成“全部”和该视图拥有的科目按钮。
+  // 只根据当前视图生成“全部”和该视图拥有的科目按钮。 / Generate All and subject buttons only from the current view.
   const rawSubjects = ['全部', ...new Set(currentEntries.map(entry => entry.subject).filter(Boolean))];
   tabsEl.innerHTML = rawSubjects.map(subject => {
     const label = currentLanguage === 'en_us' ? (subject === '全部' ? 'All' : subject) : subject;
@@ -503,7 +552,7 @@ function entriesForView() {
 }
 
 function render() {
-  // 每次本地操作或远程同步后重绘卡片列表。
+  // 每次本地操作或远程同步后重绘卡片列表。 / Re-render the card list after each local action or remote sync.
   renderViewTabs();
   const currentEntries = entriesForView();
   renderTabs(currentEntries);
@@ -591,7 +640,7 @@ function saveStudyPlanLocally(planText) {
   try {
     localStorage.setItem('studyPlanMarkdown', planText);
   } catch (error) {
-    // 浏览器本地存储不可用时仅保留当前内存内容。
+    // 浏览器本地存储不可用时仅保留当前内存内容。 / Keep the current in-memory content when browser storage is unavailable.
   }
 
   const blob = new Blob([planText], { type: 'text/markdown;charset=utf-8' });
@@ -731,9 +780,26 @@ document.querySelector('#saveGithubSettings').onclick = () => {
 setLanguage(currentLanguage);
 setTheme(currentTheme);
 render();
-loadThemeColors();
 (async () => {
   try {
+    settingsConfig = await loadSettings();
+    Object.assign(translations.zh_cn, settingsConfig.text?.zh_cn || {});
+    Object.assign(translations.en_us, settingsConfig.text?.en_us || {});
+    const defaults = settingsConfig.defaults || {};
+    if (!localStorage.getItem('preferredLanguage') && ['zh_cn', 'en_us'].includes(defaults.language)) {
+      currentLanguage = defaults.language;
+    }
+    if (!localStorage.getItem('theme') && ['light', 'dark'].includes(defaults.theme)) {
+      currentTheme = defaults.theme;
+      setTheme(currentTheme);
+    }
+    if (!localStorage.getItem('defaultSubject') && typeof defaults.subject === 'string') {
+      defaultSubject = defaults.subject;
+      defaultSubjectInput.value = defaultSubject;
+      subjectInput.value = defaultSubject;
+    }
+    setLanguage(currentLanguage);
+    await loadThemeColors();
     storageConfig = await loadStorageConfig();
     await pullConfiguredWrongAnswers();
   } catch (error) {

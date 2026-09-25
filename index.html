@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="dark">
 <head>
+<!-- 页面基础元数据与外部字体。 / Page metadata and external fonts. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>老弟の神秘错题本</title>
@@ -10,6 +11,7 @@
 </head>
 <body>
 <div class="wrap">
+  <!-- 顶部导航、语言切换和主题切换。 / Top navigation, language switch, and theme switch. -->
   <div class="plate">
     <div class="top-row">
       <span class="drawer" data-i18n="collection">合集</span>
@@ -19,8 +21,9 @@
       </div>
       <button class="ghost theme-toggle" id="themeToggle" type="button" aria-label="切换为浅色主题" title="切换为浅色主题">☀</button>
     </div>
-    <h1 data-i18n="title">错题本</h1>
-    <p data-i18n="tagline">快把错题放进来.</p>
+    <!-- 标题与副标题由脚本按顺序逐字显示。 / The script types the title and tagline sequentially. -->
+    <div id="titleTyping" class="title-typing" aria-label="页面标题"><span class="typing-text"></span><span class="typing-caret" aria-hidden="true"></span></div>
+    <div id="taglineTyping" class="tagline-typing" aria-label="页面副标题"><span class="typing-text"></span><span class="typing-caret" aria-hidden="true"></span></div>
     <div class="sync-row">
       <span id="syncStatus" class="sync-status" data-i18n="notConnected">未连接</span>
       <button class="ghost small" id="refreshIssues" data-i18n="refreshIssues">刷新错题</button>
@@ -33,6 +36,7 @@
     </div>
   </div>
 
+  <!-- GitHub 连接配置。 / GitHub connection settings. -->
   <div class="glass settings" id="githubSettingsPanel" hidden>
     <p class="slip-label" data-i18n="githubSettings">GitHub 设置</p>
     <p class="hint" data-i18n="githubHint">每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。</p>
@@ -46,6 +50,7 @@
     </div>
   </div>
 
+  <!-- 错题录入和本地导出操作。 / Mistake entry and local export actions. -->
   <div class="slip glass">
     <p class="slip-label" data-i18n="newEntry">新题</p>
     <div class="row">
@@ -61,6 +66,7 @@
     </div>
   </div>
 
+  <!-- 学习计划生成区域。 / Study-plan generation area. -->
   <div class="slip glass agent-panel">
     <p class="slip-label" data-i18n="studyAgent">学习代理</p>
     <p class="hint" data-i18n="studyAgentHint">根据当前错题库生成复习优先级与行动建议。</p>
@@ -70,6 +76,7 @@
     <textarea id="agentOutput" class="agent-output" readonly data-placeholder-en="Click “Generate plan” to get a review suggestion based on your current mistake set." data-placeholder-zh="点击“生成计划”后，代理会根据错题分布给出复习建议。"></textarea>
   </div>
 
+  <!-- 错题视图、科目筛选和卡片列表。 / Mistake views, subject filters, and card list. -->
   <div class="view-tabs" id="viewTabs"></div>
   <div class="tabs" id="tabs"></div>
   <p class="count" id="count"></p>
