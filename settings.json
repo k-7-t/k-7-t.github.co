@@ -8,6 +8,14 @@
     "theme": "dark",
     "subject": "coding"
   },
+  "accountSystem": {
+    "enabled": true,
+    "usersDirectory": "users",
+    "documentation": {
+      "zh_cn": "注册账户时把用户名、创建时间和 PBKDF2 密码哈希写入 GitHub 仓库 users/{username}.json；管理员用户名从 users/admins.json 读取。注册需要 GitHub Contents 读写权限。",
+      "en_us": "Registration writes the username, creation time, and PBKDF2 password hash to users/{username}.json in the GitHub repository. Admin usernames come from users/admins.json. Registration requires GitHub Contents read/write permission."
+    }
+  },
   "behavior": {
     "titleTypingStartDelayMs": 500,
     "titleTypingDelayMs": 140,
@@ -39,6 +47,16 @@
       "all": "全部",
       "emptyState": "还没有错题，先记录第一道吧。",
       "githubHint": "每个人可以使用自己的 GitHub 仓库。配置只保存在当前浏览器中。",
+      "accountTitle": "账户",
+      "accountLogin": "登录",
+      "accountRegister": "注册",
+      "accountGuest": "游客进入",
+      "accountLogout": "退出登录",
+      "adminDelete": "永久删除",
+      "adminDeleteAll": "永久删除所有错题",
+      "publicView": "公开",
+      "publicMistake": "公开给其他用户",
+      "senderId": "用户 ID",
       "noPlan": "当前没有待复习错题。先记录一条题目，再让代理给出计划。",
       "localSave": "学习计划已保存到本地",
       "githubSave": "学习计划已保存到 GitHub",
@@ -68,6 +86,16 @@
       "all": "All",
       "emptyState": "No mistakes yet. Add your first one.",
       "githubHint": "Everyone can use their own GitHub repository. The config is saved in this browser only.",
+      "accountTitle": "Account",
+      "accountLogin": "Log in",
+      "accountRegister": "Register",
+      "accountGuest": "Continue as guest",
+      "accountLogout": "Log out",
+      "adminDelete": "Permanently delete",
+      "adminDeleteAll": "Permanently delete all mistakes",
+      "publicView": "Public",
+      "publicMistake": "Share this mistake publicly",
+      "senderId": "User ID",
       "noPlan": "There are no pending mistakes. Add one to generate a plan.",
       "localSave": "Study plan saved locally",
       "githubSave": "Study plan saved to GitHub",
@@ -80,6 +108,8 @@
       "ghOwner": "GitHub 用户名",
       "ghRepo": "仓库名称",
       "ghToken": "GitHub Token",
+      "accountUsername": "用户名",
+      "accountPassword": "密码",
       "subject": "科目",
       "title": "题目标题",
       "question": "哪里做错了？",
@@ -91,6 +121,8 @@
       "ghOwner": "GitHub username",
       "ghRepo": "Repository name",
       "ghToken": "GitHub Token",
+      "accountUsername": "Username",
+      "accountPassword": "Password",
       "subject": "Subject",
       "title": "Question title",
       "question": "Where did it go wrong?",
@@ -181,7 +213,7 @@
       "readOnStartup": true,
       "local": { "source": "localStorage:wrongAnswersCatalog", "description": "保存在本浏览器；每次打开网站读取并显示。" },
       "markdown": { "fileName": "mistakes.md", "source": "GitHub repository file", "description": "保存为 GitHub 仓库中的 Markdown 文件；每次打开网站从云端读取并显示。" },
-      "issue": { "source": "GitHub Issues", "description": "保存为 GitHub Issue；每次打开网站从云端读取并显示。" }
+      "issue": { "source": "GitHub Issues", "description": "保存为 GitHub Issue，包含 Username 和 Public 字段；每次打开网站从云端读取并显示。" }
     },
     "studyPlan": {
       "options": ["local", "markdown"],

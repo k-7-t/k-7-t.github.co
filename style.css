@@ -203,6 +203,28 @@ button.small { padding: 7px 14px; font-size: 0.78rem; }
 }
 .settings { padding: 22px; margin-bottom: 30px; }
 .settings .hint { font-size: 0.82rem; color: var(--ink-soft); margin: 0 0 16px; line-height: 1.5; }
+.account-panel { padding: 22px; margin-bottom: 24px; }
+.account-panel .hint { font-size: 0.82rem; color: var(--ink-soft); margin: 0 0 12px; line-height: 1.5; }
+.account-panel input { margin-bottom: 10px; }
+.account-panel .actions { flex-wrap: wrap; }
+#accountSession, #adminActions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+#accountSession[hidden], #adminActions[hidden], #accountForm[hidden], #accountPanel[hidden], #publicMistake[hidden] { display: none !important; }
+#accountIdentity { color: var(--ink-soft); font-size: 0.86rem; }
+#adminActions { margin-top: 14px; }
+.public-toggle.active { background: var(--button-pressed-bg); color: var(--button-pressed-text); border-color: var(--button-pressed-border); }
+.public-toggle:disabled { opacity: 0.55; cursor: not-allowed; }
+.danger {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--red) 60%, var(--glass-border));
+  border-radius: 999px;
+  padding: 9px 16px;
+  color: #fff;
+  background: var(--red);
+  cursor: pointer;
+}
+.danger:hover { filter: brightness(1.08); }
+.card-admin-delete { margin: 14px 0 0 10px; }
 
 /* 统一玻璃面板效果。 / Shared glass-panel styling. */
 .glass {
@@ -295,6 +317,7 @@ button.primary:active, button.ghost:active, .tab:active {
 button:focus-visible, input:focus-visible, textarea:focus-visible, .tab:focus-visible {
   outline: 2px solid var(--focus-color); outline-offset: 2px;
 }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* 单条错题卡片及其状态信息。 / Individual mistake cards and their status details. */
 .card {

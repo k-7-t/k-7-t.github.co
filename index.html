@@ -50,6 +50,28 @@
     </div>
   </div>
 
+  <!-- 本地账户登录和管理员操作。 / Local account login and administrator actions. -->
+  <div class="glass account-panel" id="accountPanel" hidden>
+    <p class="slip-label" data-i18n="accountTitle">账户</p>
+    <p class="hint" id="accountStatus" aria-live="polite"></p>
+    <form id="accountForm" autocomplete="on">
+      <input id="accountUsername" name="account-username" autocomplete="username" maxlength="32" placeholder="用户名" data-placeholder-en="Username" data-placeholder-zh="用户名">
+      <input id="accountPassword" name="account-password" type="password" autocomplete="current-password" placeholder="密码" data-placeholder-en="Password" data-placeholder-zh="密码">
+      <div class="actions">
+        <button class="primary" id="accountLogin" type="button" data-i18n="accountLogin">登录</button>
+        <button class="ghost" id="accountRegister" type="button" data-i18n="accountRegister">注册</button>
+        <button class="ghost" id="accountGuest" type="button" data-i18n="accountGuest">游客进入</button>
+      </div>
+    </form>
+    <div id="accountSession" hidden>
+      <span id="accountIdentity"></span>
+      <button class="ghost small" id="accountLogout" type="button" data-i18n="accountLogout">退出登录</button>
+    </div>
+    <div id="adminActions" hidden>
+      <button class="danger small" id="adminDeleteAll" type="button" data-i18n="adminDeleteAll">永久删除所有错题</button>
+    </div>
+  </div>
+
   <!-- 错题录入和本地导出操作。 / Mistake entry and local export actions. -->
   <div class="slip glass">
     <p class="slip-label" data-i18n="newEntry">新题</p>
@@ -60,6 +82,7 @@
       <textarea id="question" placeholder="哪里做错了？" data-placeholder-en="Where did it go wrong?" data-placeholder-zh="哪里做错了？"></textarea>
       <textarea id="answer" placeholder="正确答案或本次学到的内容……" data-placeholder-en="Correct answer or what you learned this time…" data-placeholder-zh="正确答案或本次学到的内容……"></textarea>
     <div class="actions">
+      <button id="publicMistake" class="tab public-toggle" type="button" aria-pressed="false" data-i18n="publicMistake">公开给其他用户</button>
       <button class="primary" id="add" data-i18n="record">记录</button>
       <button class="ghost" id="export" data-i18n="exportTxt">导出 TXT</button>
       <button class="ghost" id="print" data-i18n="printSave">打印/保存</button>

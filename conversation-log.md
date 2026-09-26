@@ -8,6 +8,11 @@
 
 ## 当前实现状态
 
+- 账号系统由 `settings.json` 中的 `accountSystem.enabled` 开关控制；注册用户存入 GitHub 仓库 `users/{username}.json`，密码字段 `pwd` 使用 PBKDF2-SHA256 哈希，不保存明文。
+- 管理员名单由 `users/admins.json` 的 `admins` 数组控制；管理员可查看所有错题，不能公开新错题，并可双重确认后永久删除单条或全部 Issues。
+- 已登录普通用户可创建私人或公开错题；公开错题在独立“公开”视图展示，只有作者和管理员可标记已学会、关闭或删除。
+- 游客错题只保存在当前浏览器的 `localStorage`，与 GitHub Issues 隔离。
+- 账号系统开启时，账号错题固定从 GitHub Issues 读取和同步；注册账户文件需要 GitHub Contents 读写权限，Issue 功能需要 Issues 权限。
 - 页面界面为中文。
 - 支持本地错题缓存。
 - 支持默认 Subject，并默认值为 `coding`。
@@ -334,3 +339,9 @@
 5. 每次agent运行时使用中文进行输出以便阅读。
 6. 所有新增或修改的代码注释必须同时包含中文和英文；每次更新后写出对应的双语注释。 / Every added or modified code comment must include both Chinese and English; record the corresponding bilingual note after each update.
 7. 当本文件更新时，保持当前实现状态在文件最上方，保持此规则在文件最下方。
+
+### 47. 添加 GitHub 仓库账密、公开错题和 Issue 删除权限
+
+- 用户：要求添加账号密码系统并把用户文件保存到 GitHub 仓库 `users` 文件夹，支持删除错题 Issue、公开错题，并对管理员隐藏公开选项。
+- 助手：新增 `settings.json` 账号开关、按用户名创建的 `users/{username}.json`（`pwd` 保存 PBKDF2-SHA256 密码哈希）、`users/admins.json` 管理员列表、登录/注册/游客模式、按用户筛选 Issues、公开视图、作者/管理员权限校验，以及管理员双重确认的永久删除单条或全部 Issues。游客错题单独保存在浏览器本地。新增界面样式和中英双语文案；代码变更没有新增注释，已有注释维持中英双语。
+- 本次记录时间：2026-09-26。
